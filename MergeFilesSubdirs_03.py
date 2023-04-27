@@ -17,7 +17,7 @@ directory = input("Введите файловый каталог: ")
 output_file_name = input("Введите имя выходного файла: ")
 
 # Список расширений файлов, которые нужно пропустить
-skip_extensions = [".json", ".proto", ".sql", ".xml"]
+skip_extensions = [".json", ".proto", ".sql", ".xml", ".desc"]
 
 # Открываем выходной файл на запись
 with open(output_file_name, "w") as output_file:
