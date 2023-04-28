@@ -36,6 +36,8 @@ with open(output_file_name, "w") as output_file:
                 content = input_file.read()
                 # Получаем имя текущего файла
                 file_name = os.path.basename(file_path)
+                # print(f" File name: {file_name}, Path: {file_path}")
+                print(f"{file_path}\{file_name}")
                 # Конвертируем содержимое текущего файла в koi8 кодировку
                 converted_content = content.encode("koi8-r", errors="ignore").decode("koi8-r", errors="ignore")
                 # Добавляем содержимое в выходной файл
