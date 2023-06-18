@@ -7,7 +7,7 @@ directory = input("Введите путь к папке с файлами: ")
 # Получение названия выходного файла от пользователя
 output_file_name = input("Введите название выходного файла: ")
 # Список расширений файлов, которые нужно пропустить
-skip_extensions = [".json", ".proto", ".sql", ".xml", ".desc"]
+skip_extensions = [".json", ".proto", ".sql", ".xml", ".desc", ".iml"]
 # Открытие выходного файла для записи
 with open(output_file_name, "w") as output_file:
     # Перебор всех файлов в папке
