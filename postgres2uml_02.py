@@ -60,15 +60,17 @@ def get_table_descriptions(conn):
         return []
 
 def generate_plantuml_description(table_descriptions, conn):
-    plantuml_description = """@startuml
+    plantuml_description_all = """@startuml
 !define table(x) class x << (T,#FFAAAA) >>
 !define TABLE(x) class x << (T,#FFAAAA) >>
 !define TYPE(x) class x << (C,#FFAAAA) >>
 !define primary_key(x) <u>x</u>
+!define is_nullable(x) <u><b>x</b></u>
 hide methods	
 hide stereotypes
 title Tables description 
 """
+    plantuml_description = plantuml_description_all
     print(f'Creation of table descriptions for Plantuml started!')
     # Create a cursor object to interact with the database
     cursor = conn.cursor()
@@ -76,6 +78,7 @@ title Tables description
     for table_name, table_type in table_descriptions:
         print(f'table_name={table_name}')
         # Start a new table block in PlantUML
+        plantuml_description_all += f"{'TABLE(' if table_type == 'BASE TABLE' else 'abstract'}{table_name}) {{\n"
         plantuml_description += f"{'TABLE(' if table_type == 'BASE TABLE' else 'abstract'}{table_name}) {{\n"
 
         # Append table description in PlantUML format
@@ -84,22 +87,29 @@ title Tables description
 
         # Append fields description in PlantUML
         # Get the columns of the table
-        cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table_name}';")
+        cursor.execute(f"""
+        SELECT column_name, data_type, is_nullable 
+        FROM information_schema.columns 
+        WHERE table_name = '{table_name}';""")
 
         # Fetch all the columns
         columns = cursor.fetchall()
 
-        for column_name, data_type in columns:
+        for column_name, data_type, is_nullable in columns:
             # Append the field description in PlantUML format
-            plantuml_description += f"\t{column_name} : {data_type}\n"
+            if is_nullable == 'NO':
+                plantuml_description_all += f"\tis_nullable({column_name}) : {data_type}\n"
+            else:
+                plantuml_description_all += f"\t{column_name} : {data_type}\n"
 
         # Close the table block in PlantUML
+        plantuml_description_all += "}\n\n"
         plantuml_description += "}\n\n"
 
-    plantuml_description += "\n@enduml\n"
+    plantuml_description_all += "\n@enduml\n"
     # Close the cursor
     cursor.close()
-    return plantuml_description
+    return plantuml_description_all, plantuml_description
 
 try:
     # Loading values from .env file
@@ -122,11 +132,13 @@ try:
     table_descriptions = get_table_descriptions(connection)
 
     # Generate PlantUML description for each table
-    plantuml_description = generate_plantuml_description(table_descriptions, connection)
+    plantuml_description_all,  plantuml_description = generate_plantuml_description(table_descriptions, connection)
 
     # Write the PlantUML description to a text file
     with open("table_descriptions.txt", "w") as file:
         file.write(plantuml_description)
+    with open("table_descriptions_all.txt", "w") as file:
+        file.write(plantuml_description_all)
 
     # Close the database connection
     connection.close()
